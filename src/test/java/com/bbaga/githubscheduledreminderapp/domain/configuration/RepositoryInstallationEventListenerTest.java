@@ -13,7 +13,7 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.quartz.SchedulerException;
+import com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling.exceptions.SchedulingException;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RepositoryInstallationEventListenerTest {
 
     @Test
-    void onInstallationAdded() throws IOException, SchedulerException {
+    void onInstallationAdded() throws IOException, SchedulingException {
         String payload = """
 {
   "action": "added",
@@ -116,7 +116,7 @@ class RepositoryInstallationEventListenerTest {
     }
 
     @Test
-    void onInstallationRemoved() throws IOException, SchedulerException {
+    void onInstallationRemoved() throws IOException, SchedulingException {
         String payload = """
 {
    "action": "removed",

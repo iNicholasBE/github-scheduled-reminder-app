@@ -30,3 +30,18 @@ application:
     endpoint:
       url: ${ACTIVITY_TRACKING_ENDPOINT_URL:http://localhost:8080}
 
+
+# JobRunr (replaces the Quartz RAMJobStore). Jobs are stored in this DataSource:
+# a local H2 file by default, Postgres or any other supported database via DATABASE_URL.
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:h2:file:./data/reminder-jobs}
+    username: ${DATABASE_USERNAME:sa}
+    password: ${DATABASE_PASSWORD:}
+
+jobrunr:
+  background-job-server:
+    enabled: true
+  dashboard:
+    enabled: ${JOBRUNR_DASHBOARD_ENABLED:true}
+    port: ${JOBRUNR_DASHBOARD_PORT:8000}

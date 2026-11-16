@@ -1,36 +1,21 @@
 package com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling;
 
 import com.bbaga.githubscheduledreminderapp.application.jobs.GitHubInstallationRepositoryScan;
-import org.quartz.*;
+import org.jobrunr.jobs.JobId;
+import org.jobrunr.scheduling.JobScheduler;
 
 public class InstallationScanJobScheduler {
-    private final Scheduler scheduler;
+    private final JobScheduler jobScheduler;
 
-    public InstallationScanJobScheduler(Scheduler scheduler) {
-        this.scheduler = scheduler;
+    public InstallationScanJobScheduler(JobScheduler jobScheduler) {
+        this.jobScheduler = jobScheduler;
     }
 
-    public void triggerJob(long installationId) throws SchedulerException {
-
-        String jobIdentity = getJobIdentity(installationId);
-
-        if (scheduler.getJobDetail(new JobKey(jobIdentity)) == null) {
-            JobDetail job = JobBuilder.newJob(GitHubInstallationRepositoryScan.class)
-                    .withIdentity(jobIdentity)
-                    .usingJobData("installationId", installationId)
-                    .storeDurably(true)
-                    .build();
-            scheduler.addJob(job, true);
-        }
-        scheduler.triggerJob(new JobKey(jobIdentity));
-    }
-
-    public void deleteJob(long installationId) throws SchedulerException {
-        String jobIdentity = getJobIdentity(installationId);
-        scheduler.deleteJob(new JobKey(jobIdentity));
-    }
-
-    private String getJobIdentity(long installationId) {
-        return String.format("%s-%s", GitHubInstallationRepositoryScan.class.getName(), installationId);
+    /**
+     * Quartz needed a durable JobDetail per installation (addJob) before it could triggerJob it.
+     * In JobRunr this is a single fire-and-forget job with the installation id as a typed argument.
+     */
+    public JobId triggerJob(long installationId) {
+        return jobScheduler.<GitHubInstallationRepositoryScan>enqueue(scan -> scan.scan(installationId));
     }
 }

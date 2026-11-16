@@ -2,7 +2,7 @@ package com.bbaga.githubscheduledreminderapp.domain.configuration.configGraphUpd
 
 import com.bbaga.githubscheduledreminderapp.domain.configuration.*;
 import com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling.NotificationJobScheduler;
-import org.quartz.*;
+import com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling.exceptions.SchedulingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public class ConfigGraphUpdater {
         long installationId,
         String repositoryFullName,
         Instant timestamp
-    ) throws SchedulerException {
+    ) throws SchedulingException {
         EntryContext context = new EntryContext(installationId, repositoryFullName, timestamp);
 
         NotificationVisitor notificationVisitor = new NotificationVisitor(
@@ -62,7 +62,7 @@ public class ConfigGraphUpdater {
         }
     }
 
-    void upsertSchedule(Notification notification, long installationId, String repositoryFullName, Instant timestamp) throws SchedulerException {
+    void upsertSchedule(Notification notification, long installationId, String repositoryFullName, Instant timestamp) throws SchedulingException {
         logger.info("Updating schedule: installation id {}, {}/{}", installationId, repositoryFullName, notification.getName());
         notification.setRepository(repositoryFullName);
         String notificationKey = notification.getFullName();

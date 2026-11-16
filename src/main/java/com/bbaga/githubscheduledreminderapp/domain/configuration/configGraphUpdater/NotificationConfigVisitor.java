@@ -2,7 +2,7 @@ package com.bbaga.githubscheduledreminderapp.domain.configuration.configGraphUpd
 
 import com.bbaga.githubscheduledreminderapp.domain.configuration.*;
 import com.bbaga.githubscheduledreminderapp.infrastructure.github.repositories.GitHubInstallationRepository;
-import org.quartz.SchedulerException;
+import com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling.exceptions.SchedulingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class NotificationConfigVisitor {
                     Extending extending = new Extending(mainConfig, repositoryConfig);
                     try {
                         configGraphUpdater.updateEntry(extending, repoInstallationId, subRepositoryFullName, context.getTimestamp());
-                    } catch (SchedulerException e) {
+                    } catch (SchedulingException e) {
                         logger.error(e.getLocalizedMessage());
                     }
                 }
@@ -56,7 +56,7 @@ public class NotificationConfigVisitor {
         if (config.getSchedule().isPresent()) {
             try {
                 configGraphUpdater.upsertSchedule(notification, context.getInstallationId(), context.getRepositoryFullName(), context.getTimestamp());
-            } catch (SchedulerException e) {
+            } catch (SchedulingException e) {
                 logger.error(e.getLocalizedMessage());
             }
         }

@@ -15,17 +15,15 @@ import com.slack.api.model.block.SectionBlock;
 import com.slack.api.model.block.composition.MarkdownTextObject;
 import java.io.IOException;
 import java.util.Optional;
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
+import org.jobrunr.jobs.annotations.Job;
+import org.jobrunr.jobs.annotations.Recurring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
-@DisallowConcurrentExecution
-public class SlackChannelMessageDelete implements Job {
+public class SlackChannelMessageDelete {
 
     private final Logger logger = LoggerFactory.getLogger(SlackChannelMessageDelete.class);
     private final BoundedUniqueQueue<SearchMessageQueueItem> searchMessageQueue;
@@ -42,7 +40,11 @@ public class SlackChannelMessageDelete implements Job {
         this.slackAppClient = slackAppClient;
     }
 
-    public void execute(JobExecutionContext context) {
+    // Quartz: SimpleTrigger withIntervalInMinutes(1).repeatForever() plus @DisallowConcurrentExecution.
+    // Per-message errors are still logged and skipped below, as before, so a Slack rate limit does not fail the run.
+    @Recurring(id = "slack-channel-message-delete", interval = "PT1M")
+    @Job(name = "Delete outdated Slack notification messages")
+    public void deleteOutdatedMessages() {
         logger.debug("Starting Slack channel clean up job");
 
         logger.debug("Searching messages...");

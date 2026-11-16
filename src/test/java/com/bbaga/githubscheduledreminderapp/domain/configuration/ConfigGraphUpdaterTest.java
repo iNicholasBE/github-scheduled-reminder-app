@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.quartz.SchedulerException;
+import com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling.exceptions.SchedulingException;
 
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConfigGraphUpdaterTest {
 
     @Test
-    void updateEntry() throws SchedulerException {
+    void updateEntry() throws SchedulingException {
         GitHubInstallationRepository installationRepository = Mockito.mock(GitHubInstallationRepository.class);
         ConcurrentHashMap<String, ConfigGraphNode> configGraph = new ConcurrentHashMap<>();
         NotificationJobScheduler jobScheduler = Mockito.mock(NotificationJobScheduler.class);
@@ -38,7 +38,7 @@ class ConfigGraphUpdaterTest {
     }
 
     @Test
-    void updateEntryWithBufferUsage() throws SchedulerException {
+    void updateEntryWithBufferUsage() throws SchedulingException {
         GitHubInstallationRepository installationRepository = Mockito.mock(GitHubInstallationRepository.class);
         ConcurrentHashMap<String, ConfigGraphNode> configGraph = new ConcurrentHashMap<>();
         NotificationJobScheduler jobScheduler = Mockito.mock(NotificationJobScheduler.class);

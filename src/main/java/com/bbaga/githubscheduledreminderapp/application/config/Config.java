@@ -10,14 +10,12 @@ import com.bbaga.githubscheduledreminderapp.infrastructure.configuration.InRepoC
 import com.bbaga.githubscheduledreminderapp.domain.configuration.RepositoryInstallationEventListener;
 import com.bbaga.githubscheduledreminderapp.infrastructure.configuration.persitance.ConfigPersistenceInterface;
 import com.bbaga.githubscheduledreminderapp.infrastructure.github.webhook.EventPublisher;
-import com.bbaga.githubscheduledreminderapp.application.jobs.GitHubInstallationScan;
 import com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling.InstallationScanJobScheduler;
 import com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling.NotificationJobScheduler;
 import com.bbaga.githubscheduledreminderapp.infrastructure.github.repositories.GitHubInstallationRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.quartz.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -26,8 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.scheduling.quartz.JobDetailFactoryBean;
-import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,29 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Config {
     @Value("${application.github.configFilePath}")
     private String configFilePath;
-
-    @Value("${application.jobs.github.installationScan.interval}")
-    private String installationScanIntervals;
-
-    @Bean
-    @Qualifier("SimpleTriggerFactoryBean")
-    public JobDetailFactoryBean jobDetail() {
-        JobDetailFactoryBean jobDetailFactory = new JobDetailFactoryBean();
-        jobDetailFactory.setJobClass(GitHubInstallationScan.class);
-        jobDetailFactory.setDescription("Invoke Sample Job service...");
-        jobDetailFactory.setDurability(true);
-        return jobDetailFactory;
-    }
-
-    @Bean
-    @Qualifier("SimpleTriggerFactoryBean")
-    public SimpleTriggerFactoryBean trigger(JobDetail jobDetail) {
-        SimpleTriggerFactoryBean trigger = new SimpleTriggerFactoryBean();
-        trigger.setJobDetail(jobDetail);
-        trigger.setRepeatInterval(Long.parseLong(installationScanIntervals));
-        trigger.setRepeatCount(SimpleTrigger.REPEAT_INDEFINITELY);
-        return trigger;
-    }
 
     @Bean
     public GitHubInstallationRepository gitHubInstallationRepository() {

@@ -5,7 +5,8 @@ import com.bbaga.githubscheduledreminderapp.domain.configuration.ConfigGraphNode
 import com.bbaga.githubscheduledreminderapp.domain.notifications.NotificationStrategyInterface;
 import com.bbaga.githubscheduledreminderapp.domain.notifications.slack.ChannelNotification;
 import com.bbaga.githubscheduledreminderapp.domain.notifications.slack.NotificationStrategy;
-import org.quartz.*;
+import org.jobrunr.jobs.annotations.Job;
+import org.jobrunr.jobs.lambdas.JobRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -21,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 @Component
-public class ScheduledNotification implements Job, ApplicationContextAware {
+public class ScheduledNotification implements JobRequestHandler<ScheduledNotificationRequest>, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
 
@@ -43,16 +44,22 @@ public class ScheduledNotification implements Job, ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
-    public void execute(JobExecutionContext context) {
-        String jobName = context.getJobDetail().getKey().getName();
+    // Retries are capped: a reminder that arrives hours late (JobRunr's default is 10 retries with exponential
+    // back-off) is worse than a missed one. The Quartz version never retried.
+    @Override
+    @Job(name = "Slack notification %0", retries = 2)
+    public void run(ScheduledNotificationRequest request) {
+        String jobName = request.notificationKey();
         logger.info("Starting notification job for {}", jobName);
 
         ConfigGraphNode node = configGraph.get(jobName);
-        try {
-            getStrategy(node.getNotification().getType()).sendNotification(node);
-        } catch (RuntimeException e) {
-            e.printStackTrace();
+        if (node == null) {
+            // Quartz version: NullPointerException, caught and printed. The repository scan deletes these schedules now.
+            logger.warn("Notification {} is not in the config graph (yet), skipping", jobName);
+            return;
         }
+
+        getStrategy(node.getNotification().getType()).sendNotification(node);
 
         logger.info("Finished notification job for {}", jobName);
     }

@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
-import org.quartz.SchedulerException;
+import com.bbaga.githubscheduledreminderapp.domain.jobs.scheduling.exceptions.SchedulingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -81,7 +81,7 @@ public class RepositoryInstallationEventListener implements ApplicationListener<
                         }
                     } catch (IOException e) {
                         logger.debug("No config file in {}", repository.getFullName());
-                    } catch (SchedulerException e) {
+                    } catch (SchedulingException e) {
                         logger.error(e.getMessage(), e);
                     }
                 });
@@ -91,11 +91,7 @@ public class RepositoryInstallationEventListener implements ApplicationListener<
                 );
             }
         } else if (payload.getRepositorySelection().equals("all")) {
-            try {
-                installationScanJobScheduler.triggerJob(installation.getId());
-            } catch (SchedulerException e) {
-                logger.error(e.getMessage(), e);
-            }
+            installationScanJobScheduler.triggerJob(installation.getId());
         }
     }
 
